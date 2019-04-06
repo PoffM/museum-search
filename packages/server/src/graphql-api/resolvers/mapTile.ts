@@ -1,22 +1,32 @@
 import * as DataLoader from "dataloader";
 import { Client, SearchResponse } from "elasticsearch";
+import { IFieldResolver } from "graphql-tools";
 import { decode_bbox } from "ngeohash";
+import { IResolverContext } from "../types";
 
-interface MapObjectLoaderParams {
+interface IMapTileLoaderParams {
   esClient: Client;
 }
 
-interface MapObjectLoaderKey {
+interface IMapTileLoaderKey {
   geohash: string;
   query?: string;
 }
 
-export type MapObjectLoader = DataLoader<MapObjectLoaderKey, any>;
+export type MapTileLoader = DataLoader<IMapTileLoaderKey, any>;
 
-export function getMapObjectLoader({
+export const mapTile: IFieldResolver<{}, IResolverContext> = async (
+  _,
+  { geohash },
+  { mapTileLoader }
+) => {
+  return mapTileLoader.load({ geohash });
+};
+
+export function getMapTileLoader({
   esClient
-}: MapObjectLoaderParams): MapObjectLoader {
-  return new DataLoader<MapObjectLoaderKey, any>(async keys => {
+}: IMapTileLoaderParams): MapTileLoader {
+  return new DataLoader<IMapTileLoaderKey, any>(async keys => {
     const body = [];
 
     const SEARCH_META = { index: "museums", size: 0 };

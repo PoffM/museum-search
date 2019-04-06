@@ -1,7 +1,7 @@
 import { Client } from "elasticsearch";
-import { MapObjectLoader } from "./dataloaders/mapObjectLoader";
+import { MapTileLoader } from "./resolvers/mapTile";
 
 export interface IResolverContext {
   esClient: Client;
-  mapObjectLoader: MapObjectLoader;
+  mapTileLoader: MapTileLoader;
 }

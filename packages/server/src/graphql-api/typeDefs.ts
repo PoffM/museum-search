@@ -5,7 +5,7 @@ import { gql } from "apollo-server";
  */
 export const typeDefs = gql`
   type Query {
-    mapObject(geohash: String!): MapObject
+    mapTile(geohash: String!): GeoPointBucket
     museums(query: String, first: Int!): MuseumSearchConnection
     museumMapObjects(
       query: String
@@ -62,6 +62,4 @@ export const typeDefs = gql`
   type MuseumMapObjectsConnection {
     edges: [MuseumMapObjectEdge]
   }
-
-  union MapObject = Museum | GeoPointBucket
 `;

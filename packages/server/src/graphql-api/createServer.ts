@@ -1,7 +1,7 @@
 import { ApolloServer } from "apollo-server";
 import { Client } from "elasticsearch";
-import { getMapObjectLoader } from "./dataloaders/mapObjectLoader";
 import { resolvers } from "./resolvers";
+import { getMapTileLoader } from "./resolvers/mapTile";
 import { typeDefs } from "./typeDefs";
 import { IResolverContext } from "./types";
 
@@ -14,7 +14,7 @@ export function createServer({ esClient }: ICreateServerParams) {
     context: () =>
       ({
         esClient,
-        mapObjectLoader: getMapObjectLoader({ esClient })
+        mapTileLoader: getMapTileLoader({ esClient })
       } as IResolverContext),
     resolvers,
     typeDefs
