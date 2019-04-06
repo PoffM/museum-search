@@ -21,8 +21,6 @@ export async function buildMuseumsIndex() {
   }
 
   await esClient.indices.putMapping({
-    index: "museums",
-    type: "museum",
     body: {
       museum: {
         properties: {
@@ -31,7 +29,9 @@ export async function buildMuseumsIndex() {
           }
         }
       }
-    }
+    },
+    index: "museums",
+    type: "museum"
   });
   console.log("Museum location geo_point mapping created.");
 
@@ -50,12 +50,14 @@ export async function buildMuseumsIndex() {
     });
   });
 
-  console.log("Indexing museum data...");
-  await esClient.bulk({
-    body: indexBody
-  });
-  console.log("Museum data indexed.");
+  if (indexBody.length) {
+    console.log("Indexing museum data...");
+    await esClient.bulk({
+      body: indexBody
+    });
+    console.log("Museum data indexed.");
+  }
 
   esClient.close();
   db.sequelize.close();
-};
+}

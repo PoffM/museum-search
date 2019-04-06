@@ -1,51 +1,53 @@
 import { db } from "../../sequelize/models";
-import { MuseumAttributes } from "../../sequelize/models/museum";
+import { IMuseumAttributes } from "../../sequelize/models/museum";
 import { buildMuseumsIndex } from "../buildMuseumsIndex";
 
 // Create mock elasticsearch client functions.
 const mockPing = jest.fn();
 const mockExists = jest.fn(async () => false);
-const mockCreate = jest.fn(async () => {});
-const mockPutMapping = jest.fn(async () => {});
+const mockCreate = jest.fn();
+const mockPutMapping = jest.fn();
 const mockClose = jest.fn();
 
-const mockBulk = jest.fn(async () => {});
+const mockBulk = jest.fn();
 
 // Mock the elasticsearch index builder's usage of the elasticsearch Client.
 jest.mock("elasticsearch", () => ({
   Client: class {
-    close = mockClose;
-    ping = mockPing;
+    public close = mockClose;
+    public ping = mockPing;
 
-    indices = {
-      exists: mockExists,
+    public indices = {
       create: mockCreate,
+      exists: mockExists,
       putMapping: mockPutMapping
     };
 
-    bulk = mockBulk;
+    public bulk = mockBulk;
   }
 }));
 
 describe("buildMuseumsIndex", () => {
   // Return mock results for Museum's findAll query.
-  jest.spyOn(db.Museum, "findAll").mockImplementation(() => {
-    // Create mock museum data.
-    const mockData: MuseumAttributes[] = [
-      {
-        id: 1,
-        name: "test museum 1",
-        latitude: 10,
-        longitude: 3
-      },
-      {
-        id: 2,
-        name: "test museum 2"
-      }
-    ];
+  const mockFindAllFromDb = jest
+    .spyOn(db.Museum, "findAll")
+    .mockImplementation(() => {
+      // Create mock museum data.
+      const mockData: IMuseumAttributes[] = [
+        {
+          id: 1,
+          latitude: 10,
+          longitude: 3,
+          name: "test museum 1"
+        },
+        {
+          id: 2,
+          name: "test museum 2"
+        }
+      ];
 
-    return mockData.map(data => db.Museum.build(data));
-  });
+      return mockData.map(data => db.Museum.build(data));
+    });
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -66,8 +68,6 @@ describe("buildMuseumsIndex", () => {
 
     expect(mockPutMapping.mock.calls.length).toEqual(1);
     expect(mockPutMapping).lastCalledWith({
-      index: "museums",
-      type: "museum",
       body: {
         museum: {
           properties: {
@@ -76,7 +76,9 @@ describe("buildMuseumsIndex", () => {
             }
           }
         }
-      }
+      },
+      index: "museums",
+      type: "museum"
     });
 
     expect(mockBulk).toHaveBeenCalledTimes(1);
@@ -92,5 +94,19 @@ describe("buildMuseumsIndex", () => {
     await buildMuseumsIndex();
 
     expect(mockCreate.mock.calls.length).toEqual(0);
+  });
+
+  it("Does not try to index museums if there are none in the database.", async () => {
+    // For this test, the database will have no museums.
+    mockFindAllFromDb.mockReturnValueOnce([]);
+
+    // Run the index builder.
+    await buildMuseumsIndex();
+
+    expect(mockPing).toHaveBeenCalledTimes(1);
+    expect(mockPing).lastCalledWith({});
+
+    // Elasticsearch's bulk method should not have been called.
+    expect(mockBulk).toHaveBeenCalledTimes(0);
   });
 });
