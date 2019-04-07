@@ -1,7 +1,6 @@
-import ApolloClient, {
-  InMemoryCache,
-  IntrospectionFragmentMatcher
-} from "apollo-boost";
+import { InMemoryCache, IntrospectionFragmentMatcher } from "apollo-boost";
+import { ApolloClient } from "apollo-client";
+import { BatchHttpLink } from "apollo-link-batch-http";
 import "isomorphic-fetch";
 import App, { Container } from "next/app";
 import React from "react";
@@ -19,8 +18,12 @@ export default class MyApp extends App {
     const fragmentMatcher = new IntrospectionFragmentMatcher({
       introspectionQueryResultData: fragmentTypes
     });
+
+    // BatchHttpLink for batched GraphQL queries support.
+    const link = new BatchHttpLink();
+
     const cache = new InMemoryCache({ fragmentMatcher });
-    this.client = new ApolloClient({ cache });
+    this.client = new ApolloClient({ cache, link });
   }
 
   public render() {

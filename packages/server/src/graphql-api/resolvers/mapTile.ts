@@ -63,7 +63,7 @@ export function getMapTileLoader({
       .responses as SearchResponse<{}>[];
 
     return responses.map(response => {
-      const bucket = response.aggregations.grid.buckets[0];
+      const bucket = response.aggregations.grid.buckets[0] || {};
       return { count: bucket.doc_count };
     });
   });

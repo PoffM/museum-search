@@ -27,7 +27,7 @@ const MUSEUMSEARCH_PAGE_CSS = `
 // Only load the MuseumMap component in the browser because Leaflet causes SSR to fail.
 const MuseumMap = dynamic<IMuseumMapProps>(
   (async () =>
-    (await import("../components/search/MuseumMap")).MuseumMap) as any,
+    (await import("../components/search/MuseumMap2")).MuseumMap) as any,
   { ssr: false }
 );
 
