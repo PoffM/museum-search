@@ -1,3 +1,5 @@
 node_modules
+packages/client/build
+packages/client/.next
 packages/*/node_modules
 packages/*/npm-debug.log
